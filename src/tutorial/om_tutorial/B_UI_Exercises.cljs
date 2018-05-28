@@ -69,13 +69,12 @@
 (declare om-person)
 
 (defui Person
-  Object
+    Object
   (initLocalState [this] {})                                ;; TODO (ex 3): Add initial local state here
 
   (render [this]
-    ; TODO: (ex 4) obtain the 'computed' onDelete handler
-    (let [name "name"                                       ;; TODO (ex 1): Get the Om properties from this
-          mate nil
+                                        ; TODO: (ex 4) obtain the 'computed' onDelete handler
+    (let [{:keys [person/name person/mate]} (om/props this)
           checked false]                                    ;; TODO (ex 3): component local state
       (dom/li nil
         (dom/input #js {:type    "checkbox"
@@ -105,29 +104,27 @@
   {:inspect-data true})
 
 (defui PeopleWidget
-  Object
+    Object
   (render [this]
-    ; TODO: (ex 4): Create a deletePerson function
-    (let [people []]                                        ; TODO (ex 2): Get yo stuff
+                                        ; TODO: (ex 4): Create a deletePerson function
+    (let [people (:people (om/props this))] ; TODO (ex 2): Get yo stuff
       (dom/div nil
         (if (= nil people)
           (dom/span nil "Loading...")
           (dom/div nil
             (dom/button #js {} "Save")
             (dom/button #js {} "Refresh List")
-            ; TODO: (ex 4) pass deletePerson as the onDelete handler to person element
+                                        ; TODO: (ex 4) pass deletePerson as the onDelete handler to person element
             (dom/ul nil (map #(om-person %) people))))))))
 
 (def people-widget (om/factory PeopleWidget))
 
 (defui Root
-  Object
+    Object
   (render [this]
-    (let [widget nil
-          new-person nil
-          last-error nil]                                   ; TODO (ex 2): Get yo stuff
+    (let [{:keys [widget new-person last-error]} (om/props this)] ; TODO (ex 2): Get yo stuff
       (dom/div nil
-        (dom/div nil (when (not= "" last-error) (str "Error " last-error)))
+        (dom/div nil (when (not= "" last-error) (str "Error: " last-error)))
         (dom/div nil
           (people-widget widget)
           (dom/input #js {:type "text"})

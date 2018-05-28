@@ -49,15 +49,15 @@
   to user interaction:
   ")
 (defcard interactive-card
-         (fn [state-atom owner]                             ;wrapper function that can accept a state atom
-           (dom/div nil "A single top-level element."
-                    (dom/span nil (str "value of x: " (:x @state-atom)))
-                    (dom/br nil)
-                    (dom/button #js {:onClick #(swap! state-atom update-in [:x] inc)} "Click me")
-                    ))
-         {:x 2}                                             ; This is a map of initial state that devcards puts in an atom
-         {:inspect-data true}                               ; options....show me the current value of the data
-         )
+  (fn [state-atom owner]                             ;wrapper function that can accept a state atom
+    (dom/div nil "A single top-level element."
+      (dom/span nil (str "value of x: " (:x @state-atom)))
+      (dom/br nil)
+      (dom/button #js {:onClick #(swap! state-atom update-in [:x] inc)} "Click me")
+      ))
+  {:x 2}                                             ; This is a map of initial state that devcards puts in an atom
+  {:inspect-data false}                               ; options....show me the current value of the data
+  )
 
 (defcard-doc
   "

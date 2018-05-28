@@ -8,9 +8,9 @@
             ))
 
 (defui Widget
-  Object
+    Object
   (render [this]
-    (dom/div nil "Hello world")))
+    (dom/div nil "Hello world!")))
 
 (defui WidgetWithHook
   Object
