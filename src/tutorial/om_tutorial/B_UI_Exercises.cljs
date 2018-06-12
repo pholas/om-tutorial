@@ -70,19 +70,24 @@
 
 (defui Person
     Object
-  (initLocalState [this] {})                                ;; TODO (ex 3): Add initial local state here
+  (initLocalState [this] {:checked true})                                ;; TODO (ex 3): Add initial local state here
 
   (render [this]
                                         ; TODO: (ex 4) obtain the 'computed' onDelete handler
-    (let [{:keys [person/name person/mate]} (om/props this)
-          checked false]                                    ;; TODO (ex 3): component local state
+    (let [{:keys [onDelete]} (om/get-computed this)
+          {:keys [person/name person/mate]} (om/props this)
+          checked (:checked (om/get-state this))
+          font-weight (case checked
+                        true "bold"
+                        false "normal")
+          style #js {:font-weight font-weight}] ;; TODO (ex 3): component local state
       (dom/li nil
         (dom/input #js {:type    "checkbox"
-                        :onClick (fn [e] (println "TODO ex 3"))
-                        :checked false                      ; TODO: ex-3: modify local state
+                        :onClick (fn [e] (om/update-state! this update :checked not))
+                        :checked  checked; TODO: ex-3: modify local state
                         })
-        (dom/span nil name)                                 ; TODO: ex 3. Make name bold when checked
-        (dom/button nil "X")                                ; TODO: (ex 4) call onDelete handler, if present
+        (dom/span #js {:style style} name) ; TODO: ex 3. Make name bold when checked
+        (dom/button (clj->js {:onClick (fn [e] (if onDelete (onDelete e) ))}) "X") ; TODO: (ex 4) call onDelete handler, if present
         (when mate (dom/ul nil (om-person mate)))))))
 
 (def om-person (om/factory Person))
@@ -103,11 +108,14 @@
   {:db/id 1 :person/name "Joe" :person/mate {:db/id 2 :person/name "Sally"}}
   {:inspect-data true})
 
+(defn deletePerson [p] (js/console.log "delete" p))
+
 (defui PeopleWidget
     Object
   (render [this]
                                         ; TODO: (ex 4): Create a deletePerson function
-    (let [people (:people (om/props this))] ; TODO (ex 2): Get yo stuff
+    (let [people (:people (om/props this))
+          ] ; TODO (ex 2): Get yo stuff
       (dom/div nil
         (if (= nil people)
           (dom/span nil "Loading...")
@@ -175,48 +183,10 @@
   To ensure you got the initial state right make sure it is the default that a person is checked.
   "
   (fn [state-atom _]
-    (om-person @state-atom))
+    (om-person (om/computed @state-atom {:onDelete deletePerson})))
   {:db/id 1 :person/name "Joe"}
   {:inspect-data true})
 
-(defcard exercise-4
-  "
-  ## Exercise 4 - Computed properties
-
-  In Om, you should not try to pass callback directly through props. While this
-  would technically work, this combines the state management with computed
-  attributes (e.g. callbacks).
-
-  Instead, callbacks and other UI-generated data should be passed into an
-  Om component using `om/computed`:
-
-  ```
-  (om-component (om/computed props { :computed-thing 4 }))
-  ```
-
-  and may be retrieved using `om/get-computed` on either the `props` or `this`
-  passed to render.
-
-  Internally, computed just places this data in a side-band area (e.g. metadata) so
-  that it doesn't interfere with other features of Om.
-
-  In Om, it turns out that you should manage the modification of lists from the owner
-  of the list; however, in our UI the delete button for a person is in the Person
-  component. Declare a placeholder function in PeopleWidget called `deletePerson`
-  that just logs a message to the javascript console (e.g. `(js/console.log \"delete\" p)`,
-  where p is the argument passed to the function).
-
-  Pass that function through to each person as `onDelete`, and hook it up to the `X` button.
-
-  Verify it works by checking the console for the messages.
-  "
-  (fn [state-atom _]
-    (om-root @state-atom))
-  {:last-error ""
-   :new-person ""
-   :widget     {:people [
-                         {:db/id 1 :person/name "Joe" :person/mate {:db/id 2 :person/name "Sally"}}
-                         {:db/id 2 :person/name "Sally" :person/mate {:db/id 1 :person/name "Joe"}}]}}
-  {:inspect-data true})
+{:inspect-data true}
 
 (defcard-doc "[Next: App Database](#!/om_tutorial.C_App_Database)")
