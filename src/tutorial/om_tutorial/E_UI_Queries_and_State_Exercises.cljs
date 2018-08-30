@@ -8,24 +8,27 @@
 (declare om-person)
 
 (defui Person
-  ;; TODO: Add a query for :db/id, :person/name, and a recursive access of :person/mate
-  ;; TODO: Add an ident that uses :db/id
-  Object
-  (initLocalState [this] {:checked false})
-  (render [this]
-    (let [{:keys [person/name person/mate]} (om/props this)
-          {:keys [onDelete]} (om/get-computed this)
-          checked (om/get-state this :checked)]
-      (dom/li nil
-        (dom/input #js {:type    "checkbox"
-                        :onClick #(om/update-state! this update :checked not)
-                        :checked (om/get-state this :checked)})
-        (if checked
-          (dom/b nil name)
-          (dom/span nil name))
-        (when onDelete
-          (dom/button #js {:onClick #(onDelete name)} "X"))
-        (when mate (dom/ul nil (om-person mate)))))))
+    ;; TODO: Add a query for :db/id, :person/name, and a recursive access of :person/mate
+    ;; TODO: Add an ident that uses :db/id
+    static om/IQuery
+    (query [this]
+      '[:db/id :person/name {:person/mate [:person/name]}])
+    Object
+    (initLocalState [this] {:checked false})
+    (render [this]
+      (let [{:keys [person/name person/mate]} (om/props this)
+            {:keys [onDelete]} (om/get-computed this)
+            checked (om/get-state this :checked)]
+        (dom/li nil
+          (dom/input #js {:type    "checkbox"
+                          :onClick #(om/update-state! this update :checked not)
+                          :checked (om/get-state this :checked)})
+          (if checked
+            (dom/b nil name)
+            (dom/span nil name))
+          (when onDelete
+            (dom/button #js {:onClick #(onDelete name)} "X"))
+          (when mate (dom/ul nil (om-person mate)))))))
 
 (def om-person (om/factory Person {:keyfn :db/id}))
 
@@ -45,16 +48,21 @@
 (def people-widget (om/factory PeopleWidget))
 
 (defui Root
-  ;; TODO: Add root query. Remember to include top-level properties and compose in PeopleWidget
-  Object
-  (render [this]
-    (let [{:keys [widget new-person last-error]} (om/props this)]
-      (dom/div nil
-        (dom/div nil (when (not= "" last-error) (str "Error " last-error)))
+    ;; TODO: Add root query. Remember to include top-level properties and compose in PeopleWidget
+    static om/IQuery
+    (query [this]
+      `[{:widget [{:people ~(om/get-query Person)}]} :new-person :last-error])
+    Object
+    (render [this]
+      (let [{:keys [widget new-person last-error]} (om/props this)]
+        (println (str "full data: " (om/props this)))
+        (println (str "widget: " widget))
         (dom/div nil
-          (people-widget widget)
-          (dom/input #js {:type "text"})
-          (dom/button #js {} "Add Person"))))))
+          (dom/div nil (when (not= "" last-error) (str "Error " last-error)))
+          (dom/div nil
+            (people-widget widget)
+            (dom/input #js {:type "text"})
+            (dom/button #js {} "Add Person"))))))
 
 (def om-root (om/factory Root))
 
