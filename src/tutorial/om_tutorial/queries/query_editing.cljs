@@ -44,27 +44,28 @@
         (gobj/set "value" code)))))
 
 (defui QueryEditor
-       Object
-       (componentDidMount [this]
-                          (let [{:keys [query id]} @(om/props this)
-                                src (pprint-src query)
-                                cm (textarea->cm id src)]
-                            (om/update-state! this assoc :cm cm)))
-       (render [this]
-               (let [props (om/props this)
-                     local (om/get-state this)]
-                 (dom/div nil
-                          (dom/h4 nil "Database")
-                          (html-edn (:db @props))
-                          (dom/hr nil)
-                          (dom/h4 nil "Query Editor")
-                          (dom/textarea #js {:id (:id @props)})
-                          (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
-                                                      (swap! props assoc :query-result (run-query (:db @props) query)
-                                                             :query query))} "Run Query")
-                          (dom/hr nil)
-                          (dom/h4 nil "Query Result")
-                          (html-edn (:query-result @props))))))
+    Object
+  (componentDidMount [this]
+    (let [{:keys [query id]} @(om/props this)
+          src (pprint-src query)
+          cm (textarea->cm id src)]
+      (om/update-state! this assoc :cm cm)))
+  (render [this]
+    (let [props (om/props this)
+          local (om/get-state this)]
+      (dom/div nil
+        (dom/h4 nil "Database")
+        (html-edn (:db @props))
+        (dom/hr nil)
+        (dom/h4 nil "Query Editor")
+        (dom/textarea #js {:id (:id @props)})
+        (dom/button #js {:onClick #(let [query (.getValue (:cm local))]
+                                     (om/update-state! this assoc :query-result (run-query (:db @props) query)
+                                       :query query))}
+          "Run Query")
+        (dom/hr nil)
+        (dom/h4 nil "Query Result")
+        (html-edn (:query-result local))))))
 
 (def query-editor (om/factory QueryEditor))
 
